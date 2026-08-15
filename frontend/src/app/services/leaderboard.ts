@@ -1,19 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeaderboardService {
 
-  private apiUrl = 'http://localhost:8000/api/leaderboard';
+  private apiUrl = `${environment.apiUrl}/leaderboard`;
 
   constructor(private http: HttpClient) {}
 
   getLeaderboard() {
     return this.http.get(this.apiUrl);
   }
+
   getLeaderboardTrends() {
-  return this.http.get('http://127.0.0.1:8000/api/leaderboard/trends');
-}
+    return this.http.get(`${this.apiUrl}/trends`);
+  }
 }
