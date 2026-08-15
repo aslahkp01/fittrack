@@ -8,6 +8,7 @@ from database import Base, engine, get_db
 from models import User, Activity, LeaderboardSnapshot
 from scoring import calculate_points
 from fastapi.middleware.cors import CORSMiddleware
+import os
 import bcrypt
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
@@ -19,7 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/login"
 )
 
-SECRET_KEY = "fitness-challenge-secret-key"
+SECRET_KEY = os.environ.get("SECRET_KEY", "fitness-challenge-secret-key")
 ALGORITHM = "HS256"
 def get_current_user(
     token: str,
