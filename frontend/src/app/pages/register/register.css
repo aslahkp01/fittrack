@@ -59,6 +59,8 @@
 
 .form-group {
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group label {
@@ -79,7 +81,8 @@
   color: var(--text-main, #17171A);
   background: white;
   outline: none;
-  transition: border-color 0.15s;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .form-group input::placeholder {
@@ -108,6 +111,7 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
+  box-sizing: border-box;
   transition: background 0.15s;
   margin-top: 4px;
 }
@@ -141,21 +145,33 @@
 .password-input-wrapper {
   position: relative;
   width: 100%;
+  box-sizing: border-box;
+  display: block;
 }
 
 .password-input-wrapper input {
-  padding-right: 48px;
+  width: 100%;
+  padding-right: 44px;
+  box-sizing: border-box;
 }
 
 .toggle-password {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background: transparent;
   border: none;
   font-size: 16px;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-muted, #70707A);
+  border-radius: 6px;
+}
+
+.toggle-password:hover {
+  background: #F0F0F5;
 }
