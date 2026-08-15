@@ -1,0 +1,313 @@
+<div class="home-container">
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <span class="pulse-dot"></span>
+        <span>THE NEXT-GEN FITNESS CHALLENGE</span>
+      </div>
+
+      <h1 class="hero-title">
+        Elevate Your Fitness.<br>
+        <span class="gradient-text">Compete. Conquer.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Track your runs, rides, swims, and gym lifts. Turn every drop of sweat into points, climb the global leaderboard, and stay motivated every single day.
+      </p>
+
+      <div class="hero-ctas">
+        @if (currentUser) {
+          <a routerLink="/add-activity" class="btn-hero-primary">
+            <span>+ Record Activity</span>
+          </a>
+          <a routerLink="/dashboard" class="btn-hero-secondary">
+            <span>View Dashboard</span>
+          </a>
+        } @else {
+          <a routerLink="/register" class="btn-hero-primary">
+            <span>Start Your Journey</span>
+            <span class="arrow">→</span>
+          </a>
+          <a routerLink="/leaderboard" class="btn-hero-secondary">
+            <span>View Leaderboard</span>
+          </a>
+        }
+      </div>
+
+      <!-- Quick Metrics Pill -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <strong>10+</strong>
+          <span>Sports & Metrics</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <strong>100%</strong>
+          <span>Real-time Scoring</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <strong>Live</strong>
+          <span>Global Leaderboard</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Visual Dual Cards showcasing the two uploaded photos -->
+    <div class="hero-visual">
+      
+      <!-- Card 1: Runner (Cardio / Outdoor) -->
+      <div class="visual-card runner-card">
+        <div class="image-wrapper">
+          <img src="/images/runner.png" alt="Cardio & Endurance Runner" class="hero-img">
+          <div class="card-overlay">
+            <span class="sport-badge run-badge">🏃 Running & Cardio</span>
+            <div class="overlay-info">
+              <h3>Endurance & Speed</h3>
+              <p>Earn +10 pts for every kilometer logged</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Weightlifter (Strength / Gym) -->
+      <div class="visual-card lifter-card">
+        <div class="image-wrapper">
+          <img src="/images/weightlifter.jpg" alt="Strength & Power Weightlifter" class="hero-img">
+          <div class="card-overlay">
+            <span class="sport-badge lift-badge">🏋️ Strength & Gym</span>
+            <div class="overlay-info">
+              <h3>Power & Persistence</h3>
+              <p>Earn +1 pt for every 60 seconds of high-intensity training</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating Achievement Badge -->
+      <div class="floating-achievement">
+        <div class="trophy-icon">🏆</div>
+        <div>
+          <small>Top Athlete</small>
+          <strong>Rank #1 Leaderboard</strong>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Quote Spotlight Banner -->
+  <section class="spotlight-quote-section">
+    <div class="spotlight-card">
+      <div class="quote-symbol">“</div>
+      <blockquote class="spotlight-text">
+        {{ quotes[currentQuoteIndex].text }}
+      </blockquote>
+      <div class="spotlight-footer">
+        <div class="author-info">
+          <span class="author-name">— {{ quotes[currentQuoteIndex].author }}</span>
+          <span class="quote-tag">{{ quotes[currentQuoteIndex].tag }}</span>
+        </div>
+        <div class="quote-controls">
+          <button (click)="prevQuote()" class="ctrl-btn" title="Previous quote">←</button>
+          <span class="quote-counter">{{ currentQuoteIndex + 1 }} / {{ quotes.length }}</span>
+          <button (click)="nextQuote()" class="ctrl-btn" title="Next quote">→</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dual Showcase: Endurance Meets Strength -->
+  <section class="showcase-section" id="activities">
+    <div class="section-header">
+      <span class="section-badge">DISCIPLINE IN MOTION</span>
+      <h2>Endurance Meets Strength</h2>
+      <p>Whether you're breaking personal records on the road or conquering heavy sets in the gym, FitTrack powers your progress.</p>
+    </div>
+
+    <div class="showcase-grid">
+      
+      <!-- Showcase Card 1 -->
+      <div class="showcase-item">
+        <div class="showcase-img-box">
+          <img src="/images/runner.png" alt="Cardio Tracking">
+          <div class="showcase-gradient-pill">Outdoor Cardio</div>
+        </div>
+        <div class="showcase-body">
+          <div class="showcase-icon">🏃</div>
+          <h3>Run Further. Move Faster.</h3>
+          <p>
+            Track outdoor runs, trail jogs, and cycling intervals with precise metric conversions. Every kilometer pushes your rank closer to the top tier.
+          </p>
+          <ul class="feature-bullets">
+            <li>✓ Auto point conversion (10 pts/km)</li>
+            <li>✓ Dynamic distance calculation</li>
+            <li>✓ Seamless mobile tracking</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Showcase Card 2 -->
+      <div class="showcase-item reversed">
+        <div class="showcase-img-box">
+          <img src="/images/weightlifter.jpg" alt="Gym and Strength Tracking">
+          <div class="showcase-gradient-pill dark-pill">Strength & Lifting</div>
+        </div>
+        <div class="showcase-body">
+          <div class="showcase-icon">🏋️</div>
+          <h3>Lifting, Power & Gym Time</h3>
+          <p>
+            Capture focused workouts, weightlifting blocks, and endurance circuits. Build true discipline while adding steady points to your profile.
+          </p>
+          <ul class="feature-bullets">
+            <li>✓ Duration-based scoring (1 pt/60s)</li>
+            <li>✓ Gym, swimming, and functional fitness support</li>
+            <li>✓ History logs and progression records</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Motivational Quotes Collection -->
+  <section class="quotes-section" id="quotes">
+    <div class="section-header">
+      <span class="section-badge">DAILY FUEL</span>
+      <h2>Words to Fuel Your Fire</h2>
+      <p>Motivation gets you started. Habit and discipline keep you going. Here are words of wisdom to inspire your next workout.</p>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="category-tabs">
+      @for (cat of categories; track cat) {
+        <button
+          class="tab-btn"
+          [class.active]="selectedCategory === cat"
+          (click)="selectCategory(cat)"
+        >
+          {{ cat }}
+        </button>
+      }
+    </div>
+
+    <!-- Quotes Grid -->
+    <div class="quotes-grid">
+      @for (quote of filteredQuotes; track quote.id) {
+        <div class="quote-card">
+          <div class="quote-card-header">
+            <span class="card-tag">{{ quote.tag }}</span>
+            <span class="quote-mark">“</span>
+          </div>
+          <p class="quote-card-text">
+            {{ quote.text }}
+          </p>
+          <div class="quote-card-footer">
+            <div class="author-avatar">{{ quote.author.charAt(0) }}</div>
+            <div class="author-meta">
+              <strong>{{ quote.author }}</strong>
+              <small>{{ quote.category }}</small>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- How It Works / Scoring Matrix -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-header">
+      <span class="section-badge">POINT SYSTEM</span>
+      <h2>Transparent & Fair Scoring</h2>
+      <p>Every activity is mathematically calculated to create balanced competition across all fitness disciplines.</p>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule-box">
+        <div class="rule-icon">🏃</div>
+        <h3>Running & Walking</h3>
+        <div class="points-badge">+10 pts / km</div>
+        <p>Log your road runs, jogs, and power walks to gain maximum distance points.</p>
+      </div>
+
+      <div class="rule-box">
+        <div class="rule-icon">🚴</div>
+        <h3>Cycling</h3>
+        <div class="points-badge">+5 pts / km</div>
+        <p>Speed through miles on the bike with balanced cycling conversion.</p>
+      </div>
+
+      <div class="rule-box">
+        <div class="rule-icon">🏊</div>
+        <h3>Swimming & Gym</h3>
+        <div class="points-badge">+1 pt / 60 sec</div>
+        <p>Every minute of intense weightlifting, calisthenics, or pool laps counts.</p>
+      </div>
+
+      <div class="rule-box">
+        <div class="rule-icon">👣</div>
+        <h3>Daily Steps</h3>
+        <div class="points-badge">+1 pt / 1,000 steps</div>
+        <p>Never let casual movement go unrewarded. Every thousand steps matters.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Banner -->
+  <section class="cta-banner">
+    <div class="cta-content">
+      <h2>Ready to Start Your Fitness Journey?</h2>
+      <p>Join FitTrack today, start logging workouts, and climb to the top of the leaderboard.</p>
+      <div class="cta-buttons">
+        @if (currentUser) {
+          <a routerLink="/add-activity" class="btn-cta-primary">+ Log Your Workout</a>
+          <a routerLink="/leaderboard" class="btn-cta-secondary">View Leaderboard</a>
+        } @else {
+          <a routerLink="/register" class="btn-cta-primary">Create Free Account</a>
+          <a routerLink="/login" class="btn-cta-secondary">Sign In</a>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Home Page Footer -->
+  <footer class="home-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="brand-badge">⚡</div>
+        <span class="brand-title">FitTrack</span>
+        <p class="footer-tagline">Minimal, premium fitness tracking and leaderboard challenge SaaS.</p>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Navigation</h4>
+        <a routerLink="/home">Home</a>
+        <a routerLink="/leaderboard">Leaderboard</a>
+        @if (currentUser) {
+          <a routerLink="/dashboard">Dashboard</a>
+          <a routerLink="/activities">Activities</a>
+          <a routerLink="/add-activity">Add Activity</a>
+        } @else {
+          <a routerLink="/login">Login</a>
+          <a routerLink="/register">Register</a>
+        }
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Sports Tracked</h4>
+        <span>Running & Walking</span>
+        <span>Cycling</span>
+        <span>Swimming</span>
+        <span>Gym & Weightlifting</span>
+        <span>Daily Steps</span>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 FitTrack SaaS. Built for athletes, lifters, and runners worldwide.</p>
+    </div>
+  </footer>
+
+</div>

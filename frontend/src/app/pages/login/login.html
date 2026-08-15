@@ -1,0 +1,52 @@
+<div class="auth-page">
+
+  <div class="auth-card">
+
+    <h1>Welcome Back</h1>
+    <p class="auth-subtitle">Login to continue your fitness journey</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="loginUser()">
+
+      <div class="form-group">
+        <label>Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+        >
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
+          <small class="error">Enter a valid email address.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+          >
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+          <small class="error">Password is required.</small>
+        }
+      </div>
+
+      <button type="submit" class="auth-button">
+        Login
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account?
+      <a routerLink="/register">Sign up</a>
+    </p>
+
+  </div>
+
+</div>

@@ -1,0 +1,409 @@
+<div class="dashboard-container">
+
+  <!-- Toast Notification Alert -->
+  @if (toastMessage()) {
+    <div class="dashboard-toast" [ngClass]="toastType()">
+      <span>{{ toastMessage() }}</span>
+      <button class="toast-close" (click)="toastMessage.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- Top Hero & Gamification Card -->
+  <section class="gamification-hero">
+    <div class="hero-top">
+      <div class="hero-greeting">
+        <span class="greeting-badge">⚡ ATHLETE DASHBOARD</span>
+        <h1 class="hero-title">{{ getGreeting() }}, {{ getUserFirstName() }}! 👋</h1>
+        <p class="hero-desc">Track your workouts, earn points, and dominate the leaderboard.</p>
+      </div>
+
+      <div class="gamification-stats">
+        <!-- Rank Pill -->
+        <div class="game-pill rank-pill">
+          <div class="pill-icon">🏆</div>
+          <div class="pill-text">
+            <small>Global Rank</small>
+            <strong>#{{ dashboard()?.rank || 1 }} <span class="total-rank-athletes">/ {{ dashboard()?.total_athletes || 1 }}</span></strong>
+          </div>
+        </div>
+
+        <!-- Streak Pill -->
+        <div class="game-pill streak-pill">
+          <div class="pill-icon">🔥</div>
+          <div class="pill-text">
+            <small>Current Streak</small>
+            <strong>{{ dashboard()?.streak_days || 0 }} {{ dashboard()?.streak_days === 1 ? 'Day' : 'Days' }}</strong>
+          </div>
+        </div>
+
+        <!-- Tier Pill -->
+        <div class="game-pill tier-pill">
+          <div class="pill-icon">⭐</div>
+          <div class="pill-text">
+            <small>Athlete Tier</small>
+            <strong>{{ dashboard()?.tier?.name || 'Bronze Athlete' }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Progress Bar -->
+    <div class="tier-progress-box">
+      <div class="tier-progress-labels">
+        <span>Level {{ dashboard()?.tier?.level || 1 }} — {{ dashboard()?.tier?.name || 'Bronze' }}</span>
+        <span>
+          <strong>{{ dashboard()?.total_points || 0 }}</strong> / {{ dashboard()?.tier?.tier_max || 100 }} pts
+          <span class="pts-needed">({{ dashboard()?.tier?.points_needed || 0 }} pts to next level)</span>
+        </span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="dashboard()?.tier?.progress_pct || 0"></div>
+      </div>
+    </div>
+
+    <!-- Fast Workout Logger Presets -->
+    <div class="fast-action-bar">
+      <span class="fast-action-label">⚡ 1-Click Log:</span>
+      <div class="preset-chips">
+        <button
+          type="button"
+          class="chip-btn chip-run"
+          (click)="quickLog('running', 'distance', 5.0, '5.0 km Run')"
+          [disabled]="isLoggingFast()"
+        >
+          <span>🏃 5k Run</span>
+          <span class="chip-pts">+500 pts</span>
+        </button>
+
+        <button
+          type="button"
+          class="chip-btn chip-gym"
+          (click)="quickLog('gym', 'duration', 2700, '45m Gym Workout')"
+          [disabled]="isLoggingFast()"
+        >
+          <span>🏋️ 45m Gym</span>
+          <span class="chip-pts">+225 pts</span>
+        </button>
+
+        <button
+          type="button"
+          class="chip-btn chip-cycle"
+          (click)="quickLog('cycling', 'distance', 15.0, '15.0 km Ride')"
+          [disabled]="isLoggingFast()"
+        >
+          <span>🚴 15k Ride</span>
+          <span class="chip-pts">+375 pts</span>
+        </button>
+
+        <button
+          type="button"
+          class="chip-btn chip-steps"
+          (click)="quickLog('steps', 'steps', 10000, '10,000 Steps')"
+          [disabled]="isLoggingFast()"
+        >
+          <span>👣 10k Steps</span>
+          <span class="chip-pts">+100 pts</span>
+        </button>
+
+        <button
+          type="button"
+          class="chip-btn chip-swim"
+          (click)="quickLog('swimming', 'duration', 1800, '30m Swim')"
+          [disabled]="isLoggingFast()"
+        >
+          <span>🏊 30m Swim</span>
+          <span class="chip-pts">+450 pts</span>
+        </button>
+
+        <a routerLink="/add-activity" class="chip-btn chip-custom">
+          <span>+ Custom Workout</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 Stats Cards in Row -->
+  <section class="stats-row">
+    
+    <!-- Stat 1: Total Activities -->
+    <div class="stat-card">
+      <div class="stat-meta">
+        <span class="stat-label">Total Activities</span>
+        <h2 class="stat-value">{{ getTotalActivitiesCount() }}</h2>
+        <div class="stat-trend-tag tag-purple">
+          <span>{{ dashboard()?.sport_breakdown ? (dashboard()?.sport_breakdown | keyvalue)?.length : 0 }} Sports Logged</span>
+        </div>
+      </div>
+      <div class="stat-icon-circle icon-purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Stat 2: Total Distance -->
+    <div class="stat-card">
+      <div class="stat-meta">
+        <span class="stat-label">Total Distance</span>
+        <h2 class="stat-value">{{ getTotalDistance() }} <span class="stat-unit">km</span></h2>
+        <div class="stat-trend-tag tag-green">
+          <span>+{{ dashboard()?.weekly_stats?.this_week_distance || 0 }} km this week</span>
+        </div>
+      </div>
+      <div class="stat-icon-circle icon-green">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Stat 3: Total Duration -->
+    <div class="stat-card">
+      <div class="stat-meta">
+        <span class="stat-label">Active Time</span>
+        <h2 class="stat-value">{{ getTotalDurationHours() }} <span class="stat-unit">hrs</span></h2>
+        <div class="stat-trend-tag tag-orange">
+          <span>+{{ dashboard()?.weekly_stats?.this_week_duration_hours || 0 }} hrs this week</span>
+        </div>
+      </div>
+      <div class="stat-icon-circle icon-orange">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Stat 4: Total Steps -->
+    <div class="stat-card">
+      <div class="stat-meta">
+        <span class="stat-label">Total Steps</span>
+        <h2 class="stat-value">{{ getTotalSteps() }}</h2>
+        <div class="stat-trend-tag tag-blue">
+          <span>+{{ dashboard()?.weekly_stats?.this_week_steps || 0 }} this week</span>
+        </div>
+      </div>
+      <div class="stat-icon-circle icon-blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="2"></circle>
+          <path d="m15 22-3-7-3 4"></path>
+          <path d="m9 11 3-3 4 2 2 5"></path>
+          <path d="m6 17 3-6"></path>
+        </svg>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2-Column Analytics Section: Volume Over Time (Left) & Sport Breakdown (Right) -->
+  <section class="dashboard-main-grid">
+
+    <!-- Volume Over Time Chart Card with Interactive Tabs -->
+    <div class="dashboard-card chart-card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Activity Points Trend</h2>
+          <span class="card-subtitle">Volume and scoring momentum over time</span>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="chart-filter-tabs">
+          <button
+            type="button"
+            class="filter-tab"
+            [class.active]="timeFilter() === '7d'"
+            (click)="setTimeFilter('7d')"
+          >
+            7 Days
+          </button>
+          <button
+            type="button"
+            class="filter-tab"
+            [class.active]="timeFilter() === '30d'"
+            (click)="setTimeFilter('30d')"
+          >
+            30 Days
+          </button>
+          <button
+            type="button"
+            class="filter-tab"
+            [class.active]="timeFilter() === 'all'"
+            (click)="setTimeFilter('all')"
+          >
+            All Time
+          </button>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="volumeChart"></canvas>
+      </div>
+
+      <!-- 7-Day Consistency Tracker -->
+      <div class="consistency-tracker">
+        <span class="consistency-title">7-Day Consistency:</span>
+        <div class="day-dots">
+          @for (d of dashboard()?.weekly_stats?.last_7_days; track d.date) {
+            <div class="day-dot-item" [class.active]="d.active" [title]="d.day + ': ' + (d.active ? 'Completed workout' : 'No workout')">
+              <span class="dot-circle">{{ d.active ? '✓' : '' }}</span>
+              <span class="dot-day">{{ d.day }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Sport Distribution Doughnut Chart -->
+    <div class="dashboard-card sport-card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Sport Distribution</h2>
+          <span class="card-subtitle">Workout breakdown by category</span>
+        </div>
+      </div>
+
+      <div class="sport-chart-container">
+        <canvas id="sportChart"></canvas>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 2-Column Lower Section: Weekly Goals (Left) & Recent Activities Feed (Right) -->
+  <section class="dashboard-lower-grid">
+
+    <!-- Weekly Goals Progress Card -->
+    <div class="dashboard-card goals-card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">🎯 Weekly Target Goals</h2>
+          <span class="card-subtitle">Stay consistent and beat your weekly milestones</span>
+        </div>
+      </div>
+
+      <div class="goals-list">
+        
+        <!-- Goal 1: Points Target -->
+        <div class="goal-item">
+          <div class="goal-header">
+            <div class="goal-label-group">
+              <span class="goal-icon">⚡</span>
+              <span class="goal-name">Weekly Points</span>
+            </div>
+            <span class="goal-progress-text">
+              <strong>{{ getPointsGoalProgress().current }}</strong> / {{ getPointsGoalProgress().target }} pts ({{ getPointsGoalProgress().pct }}%)
+            </span>
+          </div>
+          <div class="goal-track">
+            <div class="goal-fill fill-purple" [style.width.%]="getPointsGoalProgress().pct"></div>
+          </div>
+        </div>
+
+        <!-- Goal 2: Distance Target -->
+        <div class="goal-item">
+          <div class="goal-header">
+            <div class="goal-label-group">
+              <span class="goal-icon">🏃</span>
+              <span class="goal-name">Weekly Distance</span>
+            </div>
+            <span class="goal-progress-text">
+              <strong>{{ getDistanceGoalProgress().current }}</strong> / {{ getDistanceGoalProgress().target }} km ({{ getDistanceGoalProgress().pct }}%)
+            </span>
+          </div>
+          <div class="goal-track">
+            <div class="goal-fill fill-green" [style.width.%]="getDistanceGoalProgress().pct"></div>
+          </div>
+        </div>
+
+        <!-- Goal 3: Active Duration Target -->
+        <div class="goal-item">
+          <div class="goal-header">
+            <div class="goal-label-group">
+              <span class="goal-icon">⏱️</span>
+              <span class="goal-name">Active Workout Time</span>
+            </div>
+            <span class="goal-progress-text">
+              <strong>{{ getDurationGoalProgress().current }}</strong> / {{ getDurationGoalProgress().target }} hrs ({{ getDurationGoalProgress().pct }}%)
+            </span>
+          </div>
+          <div class="goal-track">
+            <div class="goal-fill fill-orange" [style.width.%]="getDurationGoalProgress().pct"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Recent Activities List Card -->
+    <div class="dashboard-card recent-card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Recent Activities</h2>
+          <span class="card-subtitle">Your latest logged fitness sessions</span>
+        </div>
+        <a routerLink="/activities" class="view-all-link">View All →</a>
+      </div>
+
+      <div class="recent-list">
+        @if (dashboard()?.activities?.length) {
+          @for (activity of dashboard().activities.slice(0, 5); track activity.id) {
+            <div class="recent-item">
+              <div class="recent-item-left">
+                
+                <div class="activity-circle-badge" [ngClass]="getSportBadgeClass(activity.sport)">
+                  @if (activity.sport === 'running' || activity.sport === 'walking') {
+                    🏃
+                  } @else if (activity.sport === 'cycling') {
+                    🚴
+                  } @else if (activity.sport === 'swimming') {
+                    🏊
+                  } @else if (activity.sport === 'gym') {
+                    🏋️
+                  } @else {
+                    👣
+                  }
+                </div>
+
+                <div class="activity-text">
+                  <div class="activity-headline">
+                    <span class="sport-name">{{ activity.sport | titlecase }}</span>
+                    <span class="activity-points-pill">+{{ activity.points }} pts</span>
+                  </div>
+                  <span class="metric-val">{{ getActivityMetricDisplay(activity) }}</span>
+                </div>
+              </div>
+
+              <div class="recent-item-right">
+                <span class="date-text">{{ getActivityDateDisplay(activity) }}</span>
+                <button
+                  type="button"
+                  class="btn-delete-activity"
+                  (click)="deleteActivity(activity.id, $event)"
+                  title="Remove activity"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        } @else {
+          <!-- Empty State Onboarding -->
+          <div class="empty-activities-state">
+            <div class="empty-icon">🏅</div>
+            <h3>No Activities Recorded Yet</h3>
+            <p>Use the 1-click presets above or log a custom workout to start climbing the leaderboard!</p>
+            <a routerLink="/add-activity" class="btn-empty-add">+ Log First Activity</a>
+          </div>
+        }
+      </div>
+    </div>
+
+  </section>
+
+</div>

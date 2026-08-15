@@ -1,0 +1,242 @@
+<div class="activity-page">
+
+  <!-- Toast Notification Alert -->
+  @if (toastMessage()) {
+    <div class="activity-toast">
+      <span>🎉 {{ toastMessage() }}</span>
+    </div>
+  }
+
+  <div class="page-top-nav">
+    <a routerLink="/dashboard" class="back-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span>Back to Dashboard</span>
+    </a>
+  </div>
+
+  <div class="page-heading">
+    <span class="page-badge">WORKOUT LOGGER</span>
+    <h1>Record Activity</h1>
+    <p>Select your workout type and log your progress to earn leaderboard points.</p>
+  </div>
+
+  <div class="activity-layout">
+
+    <!-- Left Form Section -->
+    <div class="form-card">
+      
+      <form [formGroup]="activityForm" (ngSubmit)="submitActivity()">
+
+        <!-- Step 1: Visual Sport Selector Grid -->
+        <div class="section-block">
+          <label class="field-label">1. Choose Sport Category</label>
+          <div class="sports-grid">
+            @for (sport of sportsList; track sport.id) {
+              <button
+                type="button"
+                class="sport-select-card"
+                [class.active]="selectedSport === sport.id"
+                (click)="selectSport(sport.id)"
+              >
+                <div class="sport-icon-circle">{{ sport.icon }}</div>
+                <div class="sport-meta">
+                  <strong>{{ sport.name }}</strong>
+                  <span class="sport-rate">{{ sport.rateLabel }}</span>
+                </div>
+                <div class="selection-check" *ngIf="selectedSport === sport.id">✓</div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Step 2: Metric Input based on selected sport -->
+        <div class="section-block">
+          <label class="field-label">2. Enter Workout Metric</label>
+          
+          <!-- Distance Input for Running, Walking, Cycling -->
+          @if (currentSportInfo?.metricType === 'distance') {
+            <div class="metric-input-wrapper">
+              <div class="input-with-unit">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0.1"
+                  formControlName="distance_km"
+                  placeholder="0.0"
+                >
+                <span class="unit-tag">Kilometers (km)</span>
+              </div>
+
+              <!-- Quick distance steppers -->
+              <div class="stepper-chips">
+                <button type="button" class="stepper-btn" (click)="setDistance(1.0)">1 km</button>
+                <button type="button" class="stepper-btn" (click)="setDistance(3.0)">3 km</button>
+                <button type="button" class="stepper-btn" (click)="setDistance(5.0)">5 km</button>
+                <button type="button" class="stepper-btn" (click)="setDistance(10.0)">10 km</button>
+                <button type="button" class="stepper-btn" (click)="setDistance(21.1)">Half Mar.</button>
+                <button type="button" class="stepper-btn step-add" (click)="addDistance(1.0)">+1 km</button>
+              </div>
+
+              @if (activityForm.get('distance_km')?.touched && activityForm.get('distance_km')?.invalid) {
+                <small class="form-error">Distance must be greater than 0 km.</small>
+              }
+            </div>
+          }
+
+          <!-- Duration Input for Swimming, Gym -->
+          @if (currentSportInfo?.metricType === 'duration') {
+            <div class="metric-input-wrapper">
+              <div class="input-with-unit">
+                <input
+                  type="number"
+                  min="1"
+                  formControlName="duration_minutes"
+                  placeholder="0"
+                >
+                <span class="unit-tag">Minutes (min)</span>
+              </div>
+
+              <!-- Quick duration steppers -->
+              <div class="stepper-chips">
+                <button type="button" class="stepper-btn" (click)="setDuration(15)">15 min</button>
+                <button type="button" class="stepper-btn" (click)="setDuration(30)">30 min</button>
+                <button type="button" class="stepper-btn" (click)="setDuration(45)">45 min</button>
+                <button type="button" class="stepper-btn" (click)="setDuration(60)">60 min</button>
+                <button type="button" class="stepper-btn" (click)="setDuration(90)">90 min</button>
+                <button type="button" class="stepper-btn step-add" (click)="addDuration(15)">+15 min</button>
+              </div>
+
+              @if (activityForm.get('duration_minutes')?.touched && activityForm.get('duration_minutes')?.invalid) {
+                <small class="form-error">Duration must be at least 1 minute.</small>
+              }
+            </div>
+          }
+
+          <!-- Steps Input for Steps -->
+          @if (currentSportInfo?.metricType === 'steps') {
+            <div class="metric-input-wrapper">
+              <div class="input-with-unit">
+                <input
+                  type="number"
+                  step="500"
+                  min="100"
+                  formControlName="steps"
+                  placeholder="0"
+                >
+                <span class="unit-tag">Steps</span>
+              </div>
+
+              <!-- Quick steps steppers -->
+              <div class="stepper-chips">
+                <button type="button" class="stepper-btn" (click)="setSteps(3000)">3,000</button>
+                <button type="button" class="stepper-btn" (click)="setSteps(5000)">5,000</button>
+                <button type="button" class="stepper-btn" (click)="setSteps(8000)">8,000</button>
+                <button type="button" class="stepper-btn" (click)="setSteps(10000)">10,000</button>
+                <button type="button" class="stepper-btn" (click)="setSteps(15000)">15,000</button>
+                <button type="button" class="stepper-btn step-add" (click)="addSteps(1000)">+1,000</button>
+              </div>
+
+              @if (activityForm.get('steps')?.touched && activityForm.get('steps')?.invalid) {
+                <small class="form-error">Steps must be greater than 0.</small>
+              }
+            </div>
+          }
+
+        </div>
+
+        <!-- Live Points Calculation Banner -->
+        <div class="live-points-banner">
+          <div class="points-banner-left">
+            <span class="points-icon">⚡</span>
+            <div>
+              <span class="points-label">Estimated Leaderboard Points:</span>
+              <strong class="points-value">+{{ estimatedPoints }} Points</strong>
+            </div>
+          </div>
+          <span class="points-formula">{{ currentSportInfo?.rateLabel }}</span>
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting() || activityForm.invalid || estimatedPoints === 0">
+          @if (isSubmitting()) {
+            <span>Saving Activity...</span>
+          } @else {
+            <span>Save & Earn +{{ estimatedPoints }} Points →</span>
+          }
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- Right Side Info Card -->
+    <div class="info-card">
+      <div class="info-header">
+        <div class="info-icon-badge">🏆</div>
+        <div>
+          <h2>Scoring System</h2>
+          <p>Every logged workout directly boosts your leaderboard rank.</p>
+        </div>
+      </div>
+
+      <div class="rule-list">
+        <div class="rule-item">
+          <span class="rule-icon">🏃</span>
+          <div class="rule-details">
+            <strong>Running</strong>
+            <small>Earn 100 points per km (1 km = 100 pts)</small>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <span class="rule-icon">🚶</span>
+          <div class="rule-details">
+            <strong>Walking</strong>
+            <small>Earn 50 points per km (1 km = 50 pts, e.g. 1.55 km = 77 pts)</small>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <span class="rule-icon">🚴</span>
+          <div class="rule-details">
+            <strong>Cycling</strong>
+            <small>Earn 25 points per km (1 km = 25 pts)</small>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <span class="rule-icon">🏊</span>
+          <div class="rule-details">
+            <strong>Swimming</strong>
+            <small>Earn 15 points per completed minute (1 min = 15 pts)</small>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <span class="rule-icon">🏋️</span>
+          <div class="rule-details">
+            <strong>Gym & Fitness</strong>
+            <small>Earn 5 points per completed minute (1 min = 5 pts)</small>
+          </div>
+        </div>
+
+        <div class="rule-item">
+          <span class="rule-icon">👣</span>
+          <div class="rule-details">
+            <strong>Daily Steps</strong>
+            <small>Earn 1 point per 100 steps (e.g. 399 steps = 3 pts)</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="pro-tip-box">
+        <strong>💡 Pro Athlete Tip:</strong>
+        <p>Log workouts on consecutive days to maintain your active streak multiplier and advance through athlete tiers!</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>

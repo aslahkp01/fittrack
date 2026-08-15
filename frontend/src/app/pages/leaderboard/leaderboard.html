@@ -1,0 +1,205 @@
+<div class="leaderboard-page">
+
+  <!-- Page Heading -->
+  <div class="leaderboard-heading">
+    <div>
+      <span class="eyebrow">GLOBAL COMPETITION</span>
+      <h1>Athlete Leaderboard</h1>
+      <p>Real-time standings based on all recorded sports, workouts, and consistency.</p>
+    </div>
+
+    <div class="trophy-badge">
+      <span class="trophy-emoji">🏆</span>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading rankings & athlete standings...</p>
+    </div>
+  } @else if (errorMsg()) {
+    <div class="error-container">
+      <p>{{ errorMsg() }}</p>
+    </div>
+  } @else {
+
+    <!-- Top 3 Podium Showcase -->
+    @if (top1) {
+      <div class="podium-section">
+        
+        <!-- #2 Silver Winner -->
+        <div class="podium-card silver" *ngIf="top2">
+          <div class="podium-rank-badge">2</div>
+          <div class="podium-avatar silver-avatar">
+            {{ top2.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="podium-medal">🥈</div>
+          <strong class="podium-name">{{ top2.name }}</strong>
+          <span class="podium-pts">{{ top2.total_points }} pts</span>
+          <span class="podium-tier">{{ getAthleteTier(top2.total_points).label }}</span>
+        </div>
+
+        <!-- #1 Gold Champion (Center) -->
+        <div class="podium-card gold champion">
+          <div class="crown-icon">👑</div>
+          <div class="podium-rank-badge gold-badge">1</div>
+          <div class="podium-avatar gold-avatar">
+            {{ top1.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="podium-medal">🥇</div>
+          <strong class="podium-name champion-name">{{ top1.name }}</strong>
+          <span class="podium-pts champion-pts">{{ top1.total_points }} pts</span>
+          <span class="champion-tag">Current Leader</span>
+        </div>
+
+        <!-- #3 Bronze Winner -->
+        <div class="podium-card bronze" *ngIf="top3">
+          <div class="podium-rank-badge">3</div>
+          <div class="podium-avatar bronze-avatar">
+            {{ top3.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="podium-medal">🥉</div>
+          <strong class="podium-name">{{ top3.name }}</strong>
+          <span class="podium-pts">{{ top3.total_points }} pts</span>
+          <span class="podium-tier">{{ getAthleteTier(top3.total_points).label }}</span>
+        </div>
+
+      </div>
+    }
+
+    <!-- "My Current Rank" Banner for Logged In User -->
+    @if (myRank) {
+      <div class="my-rank-banner">
+        <div class="my-rank-left">
+          <div class="my-rank-pill">
+            <span class="my-rank-num">#{{ myRank.rank }}</span>
+            <span class="my-rank-label">Your Rank</span>
+          </div>
+          <div class="my-rank-details">
+            <strong>{{ myRank.name }} (You)</strong>
+            <span class="my-rank-sub">{{ myRank.total_points }} pts · {{ getAthleteTier(myRank.total_points).label }}</span>
+          </div>
+        </div>
+
+        <div class="my-rank-right">
+          @if (myRank.rank > 1) {
+            <span class="overtake-tip">
+              🔥 <strong>+{{ pointsToNextRank }} pts</strong> to take #{{ myRank.rank - 1 }}
+            </span>
+          } @else {
+            <span class="overtake-tip crown-tip">
+              👑 You are leading the global leaderboard!
+            </span>
+          }
+          <a routerLink="/add-activity" class="btn-boost">+ Boost Points</a>
+        </div>
+      </div>
+    }
+
+    <!-- Search Toolbar -->
+    <div class="leaderboard-toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Search athlete by name..."
+        >
+      </div>
+      <span class="athlete-count">{{ filteredUsers.length }} Athletes Competing</span>
+    </div>
+
+    <!-- Leaderboard Main Table Card -->
+    <div class="leaderboard-card">
+
+      <div class="table-header">
+        <span>Rank</span>
+        <span>Athlete</span>
+        <span>Tier</span>
+        <span>Points</span>
+        <span>Movement</span>
+      </div>
+
+      <div class="table-body">
+        @for (user of filteredUsers; track user.rank) {
+          <div 
+            class="leader-row"
+            [class.is-current-user]="isCurrentUser(user)"
+            [class.top-user]="user.rank <= 3"
+          >
+
+            <!-- Rank Cell -->
+            <div class="rank-cell">
+              @if (user.rank === 1) {
+                <span class="medal-icon">🥇</span>
+              } @else if (user.rank === 2) {
+                <span class="medal-icon">🥈</span>
+              } @else if (user.rank === 3) {
+                <span class="medal-icon">🥉</span>
+              } @else {
+                <span class="rank-number">#{{ user.rank }}</span>
+              }
+            </div>
+
+            <!-- User Avatar & Name Cell -->
+            <div class="user-cell">
+              <div 
+                class="avatar"
+                [ngClass]="{'avatar-gold': user.rank === 1, 'avatar-silver': user.rank === 2, 'avatar-bronze': user.rank === 3}"
+              >
+                {{ user.name.charAt(0).toUpperCase() }}
+              </div>
+
+              <div class="user-meta">
+                <div class="name-row">
+                  <strong>{{ user.name }}</strong>
+                  <span class="you-badge" *ngIf="isCurrentUser(user)">YOU</span>
+                </div>
+                <small *ngIf="user.rank === 1" class="leader-caption">Current Leader ⚡</small>
+              </div>
+            </div>
+
+            <!-- Athlete Tier Cell -->
+            <div class="tier-cell">
+              <span class="tier-badge" [ngClass]="getAthleteTier(user.total_points).class">
+                {{ getAthleteTier(user.total_points).label }}
+              </span>
+            </div>
+
+            <!-- Points Cell -->
+            <div class="points-cell">
+              <strong>{{ user.total_points.toLocaleString() }}</strong>
+              <span>pts</span>
+            </div>
+
+            <!-- Trend Movement Cell -->
+            <div class="trend-cell">
+              @if (user.trend === 'up') {
+                <span class="trend-pill trend-up">
+                  ↑ +{{ user.previous_rank - user.rank }}
+                </span>
+              } @else if (user.trend === 'down') {
+                <span class="trend-pill trend-down">
+                  ↓ -{{ user.rank - user.previous_rank }}
+                </span>
+              } @else if (user.trend === 'same') {
+                <span class="trend-pill trend-same">
+                  — Same
+                </span>
+              } @else {
+                <span class="trend-pill trend-new">
+                  ★ New
+                </span>
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+
+    </div>
+
+  }
+
+</div>

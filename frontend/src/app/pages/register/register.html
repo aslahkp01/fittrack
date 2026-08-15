@@ -1,0 +1,68 @@
+<div class="auth-page">
+
+  <div class="auth-card">
+
+    <h1>Create Account</h1>
+    <p class="auth-subtitle">Join FitTrack and start your journey</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="registerUser()">
+
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" formControlName="first_name" placeholder="Enter your first name">
+        @if (registerForm.get('first_name')?.touched && registerForm.get('first_name')?.invalid) {
+          <small class="error">First name is required.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" formControlName="last_name" placeholder="Enter your last name">
+        @if (registerForm.get('last_name')?.touched && registerForm.get('last_name')?.invalid) {
+          <small class="error">Last name is required.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" placeholder="Enter your email">
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+          <small class="error">Please enter a valid email address.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Create a password"
+          >
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+          <small class="error">Password must be at least 6 characters long.</small>
+        }
+      </div>
+
+      <button type="submit" class="auth-button" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          Creating Account...
+        } @else {
+          Sign Up
+        }
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Already have an account?
+      <a routerLink="/login">Login</a>
+    </p>
+
+  </div>
+
+</div>

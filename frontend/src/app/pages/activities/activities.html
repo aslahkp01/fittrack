@@ -1,0 +1,248 @@
+<div class="activities-page">
+
+  <!-- Toast Notification Alert -->
+  @if (toastMessage()) {
+    <div class="activity-toast">
+      <span>✓ {{ toastMessage() }}</span>
+    </div>
+  }
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <span class="eyebrow">WORKOUT LOG</span>
+      <h1>Activity History</h1>
+      <p>Track your physical progress and manage all recorded workouts.</p>
+    </div>
+    
+    <a routerLink="/add-activity" class="btn-log-new">
+      + Log New Activity
+    </a>
+  </div>
+
+  <!-- Top Metric Summary Cards -->
+  <div class="metrics-summary-grid">
+    
+    <div class="summary-metric-card">
+      <div class="metric-icon-box bg-purple">🏋️</div>
+      <div class="metric-info">
+        <span class="metric-title">Total Workouts</span>
+        <strong class="metric-num">{{ totalWorkouts }}</strong>
+      </div>
+    </div>
+
+    <div class="summary-metric-card">
+      <div class="metric-icon-box bg-yellow">⚡</div>
+      <div class="metric-info">
+        <span class="metric-title">Points Earned</span>
+        <strong class="metric-num text-yellow">+{{ totalPoints.toLocaleString() }}</strong>
+      </div>
+    </div>
+
+    <div class="summary-metric-card">
+      <div class="metric-icon-box bg-green">📍</div>
+      <div class="metric-info">
+        <span class="metric-title">Total Distance</span>
+        <strong class="metric-num text-green">{{ totalDistance }} km</strong>
+      </div>
+    </div>
+
+    <div class="summary-metric-card">
+      <div class="metric-icon-box bg-blue">⭐</div>
+      <div class="metric-info">
+        <span class="metric-title">Favorite Sport</span>
+        <strong class="metric-num text-blue">{{ favoriteSport }}</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Filter & Controls Toolbar -->
+  <div class="controls-toolbar">
+    
+    <!-- Sport Filter Chips -->
+    <div class="filter-chips-scroll">
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'all'"
+        (click)="setSportFilter('all')"
+      >
+        <span>All</span>
+        <span class="chip-count">{{ getSportCount('all') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'running'"
+        (click)="setSportFilter('running')"
+      >
+        <span>🏃 Running</span>
+        <span class="chip-count">{{ getSportCount('running') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'walking'"
+        (click)="setSportFilter('walking')"
+      >
+        <span>🚶 Walking</span>
+        <span class="chip-count">{{ getSportCount('walking') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'cycling'"
+        (click)="setSportFilter('cycling')"
+      >
+        <span>🚴 Cycling</span>
+        <span class="chip-count">{{ getSportCount('cycling') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'swimming'"
+        (click)="setSportFilter('swimming')"
+      >
+        <span>🏊 Swimming</span>
+        <span class="chip-count">{{ getSportCount('swimming') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'gym'"
+        (click)="setSportFilter('gym')"
+      >
+        <span>🏋️ Gym</span>
+        <span class="chip-count">{{ getSportCount('gym') }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="sportFilter === 'steps'"
+        (click)="setSportFilter('steps')"
+      >
+        <span>👣 Steps</span>
+        <span class="chip-count">{{ getSportCount('steps') }}</span>
+      </button>
+    </div>
+
+    <!-- Search & Sort Row -->
+    <div class="search-sort-bar">
+      
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          placeholder="Search by sport or type..."
+        >
+      </div>
+
+      <div class="sort-box">
+        <label>Sort:</label>
+        <select [(ngModel)]="sortBy">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="points">Highest Points</option>
+          <option value="distance">Longest Distance</option>
+        </select>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Activities List / Table -->
+  <div class="activities-card">
+
+    @if (isLoading()) {
+      <div class="state-container">
+        <div class="loading-spinner"></div>
+        <p>Loading your activity log...</p>
+      </div>
+    } @else if (errorMsg()) {
+      <div class="state-container error">
+        <p>{{ errorMsg() }}</p>
+      </div>
+    } @else if (filteredActivities.length === 0) {
+      <div class="state-container empty">
+        <div class="empty-icon-large">🏃</div>
+        <h3>No Activities Found</h3>
+        <p>You haven't recorded any workouts matching your current filter.</p>
+        <a routerLink="/add-activity" class="btn-log-new" style="margin-top: 14px;">
+          + Log First Workout
+        </a>
+      </div>
+    } @else {
+      
+      <div class="table-header">
+        <span>Sport & Category</span>
+        <span>Date & Time</span>
+        <span>Metric Details</span>
+        <span>Points Earned</span>
+        <span>Action</span>
+      </div>
+
+      <div class="activity-rows">
+        @for (act of filteredActivities; track act.id) {
+          <div class="activity-row">
+            
+            <!-- Sport Cell -->
+            <div class="sport-cell">
+              <div class="sport-icon-box" [ngClass]="act.sport">
+                {{ getSportIcon(act.sport) }}
+              </div>
+              <div class="sport-text-meta">
+                <strong>{{ act.sport | titlecase }}</strong>
+                <small>{{ act.metric_type | titlecase }}</small>
+              </div>
+            </div>
+
+            <!-- Date Cell -->
+            <div class="date-cell">
+              <span class="date-text">{{ formatDate(act.created_at) }}</span>
+            </div>
+
+            <!-- Value Cell -->
+            <div class="value-cell">
+              <span class="metric-pill">{{ getMetricValue(act) }}</span>
+            </div>
+
+            <!-- Points Cell -->
+            <div class="points-cell">
+              <span class="points-badge">+{{ act.points }} pts</span>
+            </div>
+
+            <!-- Action / Delete Cell -->
+            <div class="action-cell">
+              <button 
+                type="button" 
+                class="btn-delete" 
+                (click)="deleteActivity(act.id)"
+                title="Delete workout"
+                aria-label="Delete activity"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        }
+      </div>
+
+    }
+
+  </div>
+
+</div>
+
