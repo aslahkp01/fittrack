@@ -2,6 +2,31 @@
 
   <div class="auth-card">
 
+    <!-- Dynamic Popup Alert Box -->
+    @if (alertMessage()) {
+      <div 
+        class="dynamic-alert-popup" 
+        [class.alert-error]="alertType() === 'error'"
+        [class.alert-success]="alertType() === 'success'"
+        role="alert"
+      >
+        <div class="alert-icon-wrap">
+          @if (alertType() === 'error') {
+            <span>⚠️</span>
+          } @else {
+            <span>✅</span>
+          }
+        </div>
+        <div class="alert-content">
+          <strong class="alert-title">{{ alertType() === 'error' ? 'Registration Notice' : 'Success!' }}</strong>
+          <span class="alert-text">{{ alertMessage() }}</span>
+        </div>
+        <button type="button" class="alert-dismiss-btn" (click)="closeAlert()" aria-label="Dismiss alert">
+          ✕
+        </button>
+      </div>
+    }
+
     <h1>Create Account</h1>
     <p class="auth-subtitle">Join FitTrack and start your journey</p>
 

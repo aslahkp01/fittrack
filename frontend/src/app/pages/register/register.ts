@@ -24,6 +24,11 @@ export class Register implements OnInit {
   isSubmitting = signal(false);
   showPassword = false;
 
+  // Dynamic Popup Alert State
+  alertMessage = signal<string | null>(null);
+  alertType = signal<'error' | 'success'>('error');
+  private alertTimeout: any;
+
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
@@ -47,9 +52,23 @@ export class Register implements OnInit {
     }
   }
 
+  showAlert(message: string, type: 'error' | 'success' = 'error', durationMs: number = 4500) {
+    if (this.alertTimeout) clearTimeout(this.alertTimeout);
+    this.alertMessage.set(message);
+    this.alertType.set(type);
+    this.alertTimeout = setTimeout(() => {
+      this.closeAlert();
+    }, durationMs);
+  }
+
+  closeAlert() {
+    this.alertMessage.set(null);
+  }
+
   registerUser() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.showAlert('Please fill in all required fields properly.', 'error');
       return;
     }
 
@@ -59,14 +78,17 @@ export class Register implements OnInit {
     this.userService.registerUser(user).subscribe({
       next: (response: any) => {
         this.isSubmitting.set(false);
-        alert('Account created successfully! Please log in.');
+        this.showAlert('Account created successfully! Redirecting to login...', 'success', 2000);
         this.registerForm.reset();
-        this.router.navigate(['/login'], { replaceUrl: true });
+        setTimeout(() => {
+          this.router.navigate(['/login'], { replaceUrl: true });
+        }, 1200);
       },
       error: (error: any) => {
         console.error('Registration error:', error);
         this.isSubmitting.set(false);
-        alert(error?.error?.detail || error?.error?.message || 'Registration failed');
+        const errMsg = error?.error?.detail || error?.error?.message || 'Registration failed. Please check your information.';
+        this.showAlert(errMsg, 'error');
       }
     });
   }
