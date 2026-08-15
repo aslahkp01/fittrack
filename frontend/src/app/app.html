@@ -143,7 +143,10 @@
         </a>
 
         <nav class="public-nav-links">
-          <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+          <a routerLink="/home" fragment="hero" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+          <a routerLink="/home" fragment="activities">Sports</a>
+          <a routerLink="/home" fragment="quotes">Inspiration</a>
+          <a routerLink="/home" fragment="how-it-works">Point System</a>
           <a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a>
         </nav>
 
@@ -160,8 +163,11 @@
 
       <!-- Public Mobile Dropdown Menu -->
       <div class="public-mobile-menu" [class.open]="publicNavOpen">
-        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closePublicNav()">Home</a>
-        <a routerLink="/leaderboard" routerLinkActive="active" (click)="closePublicNav()">Leaderboard</a>
+        <a routerLink="/home" fragment="hero" (click)="closePublicNav()">Home</a>
+        <a routerLink="/home" fragment="activities" (click)="closePublicNav()">Sports</a>
+        <a routerLink="/home" fragment="quotes" (click)="closePublicNav()">Inspiration</a>
+        <a routerLink="/home" fragment="how-it-works" (click)="closePublicNav()">Point System</a>
+        <a routerLink="/leaderboard" (click)="closePublicNav()">Leaderboard</a>
         <div class="mobile-menu-divider"></div>
         <a routerLink="/login" routerLinkActive="active" class="mobile-btn-ghost" (click)="closePublicNav()">Log In</a>
         <a routerLink="/register" routerLinkActive="active" class="mobile-btn-primary" (click)="closePublicNav()">Sign Up Free</a>

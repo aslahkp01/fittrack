@@ -7,6 +7,14 @@
   font-family: var(--font-sans, 'Inter', sans-serif);
 }
 
+.hero-section,
+.showcase-section,
+.quotes-section,
+.how-it-works,
+section[id] {
+  scroll-margin-top: 90px;
+}
+
 /* ==========================================================================
    Public Top Navigation
    ========================================================================== */
