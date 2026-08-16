@@ -339,3 +339,97 @@ def test_rank_movement_on_new_activity():
     assert trends[1]["previous_rank"] == 1
     assert trends[1]["trend"] == "down"
 
+
+# ==============================================================================
+# 5. Activity Update (PUT) Endpoint Tests
+# ==============================================================================
+
+def test_update_activity_success_recalculates_points():
+    """Test updating an activity's metric value recalculates normalized points properly."""
+    u = client.post("/api/users", json={
+        "first_name": "Updater",
+        "last_name": "User",
+        "email": "updater@example.com",
+        "password": "password123"
+    }).json()["userId"]
+
+    # Log in to get token
+    login_res = client.post("/api/login", json={
+        "email": "updater@example.com",
+        "password": "password123"
+    }).json()
+    token = login_res["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Create initial 5.0 km run (500 pts)
+    act_res = client.post("/api/activities", json={
+        "user_id": u,
+        "sport": "running",
+        "metric_type": "distance",
+        "distance_km": 5.0
+    }, headers=headers).json()
+    act_id = act_res["activityId"]
+    assert act_res["points"] == 500
+
+    # Update distance to 8.5 km (should recalculate to 850 pts)
+    update_res = client.put(f"/api/activities/{act_id}", json={
+        "distance_km": 8.5
+    }, headers=headers)
+    assert update_res.status_code == 200
+    updated_data = update_res.json()
+    assert updated_data["points"] == 850
+    assert updated_data["distance_km"] == 8.5
+    assert updated_data["sport"] == "running"
+
+def test_update_activity_change_sport():
+    """Test changing sport from running to cycling updates metric and recalculates points (20 km * 25 = 500 pts)."""
+    client.post("/api/users", json={
+        "first_name": "Sport",
+        "last_name": "Changer",
+        "email": "changer@example.com",
+        "password": "password123"
+    })
+    token = client.post("/api/login", json={
+        "email": "changer@example.com",
+        "password": "password123"
+    }).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    act = client.post("/api/activities", json={
+        "sport": "running",
+        "metric_type": "distance",
+        "distance_km": 5.0
+    }, headers=headers).json()
+
+    # Change to cycling 20 km
+    res = client.put(f"/api/activities/{act['activityId']}", json={
+        "sport": "cycling",
+        "distance_km": 20.0
+    }, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["sport"] == "cycling"
+    assert data["points"] == 500
+
+def test_update_activity_forbidden_for_other_user():
+    """A user cannot edit another user's activity."""
+    u1 = client.post("/api/users", json={"first_name": "User", "last_name": "One", "email": "u1@example.com", "password": "password123"}).json()["userId"]
+    u2 = client.post("/api/users", json={"first_name": "User", "last_name": "Two", "email": "u2@example.com", "password": "password123"}).json()["userId"]
+
+    t1 = client.post("/api/login", json={"email": "u1@example.com", "password": "password123"}).json()["token"]
+    t2 = client.post("/api/login", json={"email": "u2@example.com", "password": "password123"}).json()["token"]
+
+    act = client.post("/api/activities", json={"sport": "running", "metric_type": "distance", "distance_km": 5.0}, headers={"Authorization": f"Bearer {t1}"}).json()
+
+    # User 2 tries to edit User 1's activity
+    res = client.put(f"/api/activities/{act['activityId']}", json={"distance_km": 10.0}, headers={"Authorization": f"Bearer {t2}"})
+    assert res.status_code == 403
+
+def test_update_activity_nonexistent():
+    """Updating a non-existent activity returns 404."""
+    client.post("/api/users", json={"first_name": "User", "last_name": "Three", "email": "u3@example.com", "password": "password123"})
+    token = client.post("/api/login", json={"email": "u3@example.com", "password": "password123"}).json()["token"]
+    res = client.put("/api/activities/99999", json={"distance_km": 5.0}, headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 404
+
+

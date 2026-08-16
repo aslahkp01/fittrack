@@ -1,5 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* Default Light Theme Variables */
+:root, [data-theme="light"], .light-theme {
+  --bg-color: #F8F9FD;
+  --bg-secondary: #EEF1F8;
+  --card-bg: #FFFFFF;
+  --card-border: #E5E7EB;
+  --primary: #6D3DF5;
+  --primary-dark: #5427D8;
+  --primary-light: #F0EBFF;
+  --text-main: #111827;
+  --text-secondary: #4B5563;
+  --text-muted: #6B7280;
+  --border-color: #E5E7EB;
+  --input-bg: #FFFFFF;
+  --input-border: #D1D5DB;
+  --success: #16A34A;
+  --danger: #DC2626;
+  --warning: #D97706;
+  --shadow-subtle: 0 4px 16px rgba(17, 24, 39, 0.05);
+  --shadow-hover: 0 12px 28px rgba(109, 61, 245, 0.12);
+  --radius-card: 16px;
+  --radius-btn: 10px;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color-scheme: light;
+}
+
+/* Modern Dark Theme Variables */
+[data-theme="dark"], .dark-theme {
+  --bg-color: #0B0E14;
+  --bg-secondary: #141824;
+  --card-bg: #161B26;
+  --card-border: #232936;
+  --primary: #8B5CF6;
+  --primary-dark: #7C3AED;
+  --primary-light: rgba(139, 92, 246, 0.18);
+  --text-main: #F3F4F6;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --border-color: #232936;
+  --input-bg: #121620;
+  --input-border: #2C3345;
+  --success: #22C55E;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 12px 32px rgba(139, 92, 246, 0.22);
+  color-scheme: dark;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -11,7 +60,10 @@ html {
 html, body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+  background: var(--bg-color);
+  color: var(--text-main);
+  transition: background-color 0.25s ease, color 0.25s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

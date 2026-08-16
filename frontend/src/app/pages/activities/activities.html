@@ -3,7 +3,7 @@
   <!-- Toast Notification Alert -->
   @if (toastMessage()) {
     <div class="activity-toast">
-      <span>✓ {{ toastMessage() }}</span>
+      <span>{{ toastMessage() }}</span>
     </div>
   }
 
@@ -12,12 +12,44 @@
     <div>
       <span class="eyebrow">WORKOUT LOG</span>
       <h1>Activity History</h1>
-      <p>Track your physical progress and manage all recorded workouts.</p>
+      <p>Track your physical progress, export records, and manage all logged workouts.</p>
     </div>
     
-    <a routerLink="/add-activity" class="btn-log-new">
-      + Log New Activity
-    </a>
+    <div class="header-actions">
+      <!-- Data Export Buttons -->
+      <button 
+        type="button" 
+        class="btn-export" 
+        (click)="exportToCSV()" 
+        title="Export your activities to CSV"
+        [disabled]="filteredActivities.length === 0"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Export CSV</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="btn-export" 
+        (click)="exportToJSON()" 
+        title="Export your activities to JSON"
+        [disabled]="filteredActivities.length === 0"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+        <span>Export JSON</span>
+      </button>
+
+      <a routerLink="/add-activity" class="btn-log-new">
+        + Log New Activity
+      </a>
+    </div>
   </div>
 
   <!-- Top Metric Summary Cards -->
@@ -187,7 +219,7 @@
         <span>Date & Time</span>
         <span>Metric Details</span>
         <span>Points Earned</span>
-        <span>Action</span>
+        <span>Actions</span>
       </div>
 
       <div class="activity-rows">
@@ -207,7 +239,7 @@
 
             <!-- Date Cell -->
             <div class="date-cell">
-              <span class="date-text">{{ formatDate(act.created_at) }}</span>
+              <span class="date-text">{{ formatDate(act.activity_date) }}</span>
             </div>
 
             <!-- Value Cell -->
@@ -220,8 +252,21 @@
               <span class="points-badge">+{{ act.points }} pts</span>
             </div>
 
-            <!-- Action / Delete Cell -->
+            <!-- Action / Edit & Delete Cell -->
             <div class="action-cell">
+              <button 
+                type="button" 
+                class="btn-edit" 
+                (click)="openEditModal(act)"
+                title="Edit workout"
+                aria-label="Edit activity"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </button>
+
               <button 
                 type="button" 
                 class="btn-delete" 
@@ -244,5 +289,94 @@
 
   </div>
 
-</div>
+  <!-- Edit Activity Modal Dialog -->
+  @if (editingActivity()) {
+    <div class="modal-backdrop" (click)="closeEditModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <div class="modal-header-title">
+            <span class="modal-badge">✏️ EDIT WORKOUT</span>
+            <h3>Update Activity</h3>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeEditModal()" aria-label="Close modal">✕</button>
+        </div>
 
+        <div class="modal-body">
+          
+          <!-- Sport Selection -->
+          <div class="form-group">
+            <label>Sport Discipline</label>
+            <select [ngModel]="editSport" (ngModelChange)="onEditSportChange($event)" class="modal-select">
+              <option value="running">🏃 Running (100 pts / km)</option>
+              <option value="walking">🚶 Walking (50 pts / km)</option>
+              <option value="cycling">🚴 Cycling (25 pts / km)</option>
+              <option value="swimming">🏊 Swimming (15 pts / min)</option>
+              <option value="gym">🏋️ Gym (5 pts / min)</option>
+              <option value="steps">👣 Daily Steps (1 pt / 100 steps)</option>
+            </select>
+          </div>
+
+          <!-- Dynamic Metric Input based on sport -->
+          @if (editSport === 'running' || editSport === 'walking' || editSport === 'cycling') {
+            <div class="form-group">
+              <label>Distance (km)</label>
+              <input 
+                type="number" 
+                [(ngModel)]="editDistance" 
+                step="0.1" 
+                min="0.1" 
+                placeholder="e.g. 5.0"
+                class="modal-input"
+              >
+            </div>
+          } @else if (editSport === 'swimming' || editSport === 'gym') {
+            <div class="form-group">
+              <label>Duration (Minutes)</label>
+              <input 
+                type="number" 
+                [(ngModel)]="editDurationMins" 
+                min="1" 
+                placeholder="e.g. 45"
+                class="modal-input"
+              >
+            </div>
+          } @else if (editSport === 'steps') {
+            <div class="form-group">
+              <label>Daily Step Count</label>
+              <input 
+                type="number" 
+                [(ngModel)]="editSteps" 
+                min="100" 
+                step="100" 
+                placeholder="e.g. 8000"
+                class="modal-input"
+              >
+            </div>
+          }
+
+          <!-- Live Recalculated Points Preview -->
+          <div class="points-preview-box">
+            <span class="preview-label">Recalculated Score:</span>
+            <span class="preview-points">+{{ editEstimatedPoints }} pts</span>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+          <button 
+            type="button" 
+            class="btn-save" 
+            (click)="saveEditActivity()" 
+            [disabled]="isUpdating() || editEstimatedPoints <= 0"
+          >
+            {{ isUpdating() ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

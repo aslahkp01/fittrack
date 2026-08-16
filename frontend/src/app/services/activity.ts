@@ -37,4 +37,17 @@ export class ActivityService {
       { headers }
     );
   }
+
+  updateActivity(activityId: number, activity: any) {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
+
+    return this.http.put(
+      `${this.apiUrl}/${activityId}`,
+      activity,
+      { headers }
+    );
+  }
 }

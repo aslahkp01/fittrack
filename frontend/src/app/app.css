@@ -199,7 +199,7 @@ body {
 .app-topbar {
   display: flex;
   height: 56px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-color);
@@ -218,9 +218,9 @@ body {
 }
 
 .sidebar-toggle-btn {
-  background: #F3F4F6;
-  border: 1px solid #E5E7EB;
-  color: #374151;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -232,8 +232,44 @@ body {
 }
 
 .sidebar-toggle-btn:hover {
-  background: #E5E7EB;
-  color: #111827;
+  background: var(--border-color);
+  color: var(--text-main);
+}
+
+.theme-toggle-btn {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--border-color);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.public-theme-toggle {
+  margin-right: 4px;
+}
+
+.mobile-theme-toggle {
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 6px 0;
 }
 
 .topbar-brand {
@@ -307,7 +343,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);

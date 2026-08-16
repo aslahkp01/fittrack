@@ -8,6 +8,7 @@ import {
   NavigationEnd
 } from '@angular/router';
 import { AuthService } from './services/auth';
+import { ThemeService } from './services/theme';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,7 @@ export class App {
 
   constructor(
     private authService: AuthService,
+    public themeService: ThemeService,
     private router: Router
   ) {
     // Auto-close sidebar on mobile after navigation

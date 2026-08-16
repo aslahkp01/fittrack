@@ -24,6 +24,14 @@ export class Activities implements OnInit {
   sportFilter = 'all';
   sortBy = 'newest'; // 'newest' | 'oldest' | 'points' | 'distance'
 
+  // Edit Modal State
+  editingActivity = signal<any | null>(null);
+  editSport = 'running';
+  editDistance: number | null = 5.0;
+  editDurationMins: number | null = 45;
+  editSteps: number | null = 8000;
+  isUpdating = signal(false);
+
   constructor(
     private dashboardService: DashboardService,
     private activityService: ActivityService,
@@ -105,11 +113,11 @@ export class Activities implements OnInit {
       return matchesSearch && matchesSport;
     });
 
-    // Sorting
+    // Sorting (using activity_date field)
     if (this.sortBy === 'newest') {
-      list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      list.sort((a, b) => new Date(b.activity_date || 0).getTime() - new Date(a.activity_date || 0).getTime());
     } else if (this.sortBy === 'oldest') {
-      list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      list.sort((a, b) => new Date(a.activity_date || 0).getTime() - new Date(b.activity_date || 0).getTime());
     } else if (this.sortBy === 'points') {
       list.sort((a, b) => (b.points || 0) - (a.points || 0));
     } else if (this.sortBy === 'distance') {
@@ -133,6 +141,156 @@ export class Activities implements OnInit {
         alert('Failed to delete activity.');
       }
     });
+  }
+
+  // Edit Activity Flow
+  openEditModal(act: any) {
+    this.editingActivity.set({ ...act });
+    this.editSport = act.sport;
+    this.editDistance = act.distance_km;
+    this.editDurationMins = act.duration_seconds ? Math.round(act.duration_seconds / 60) : null;
+    this.editSteps = act.steps;
+  }
+
+  closeEditModal() {
+    this.editingActivity.set(null);
+  }
+
+  onEditSportChange(sport: string) {
+    this.editSport = sport;
+    if (sport === 'running' || sport === 'walking') {
+      if (!this.editDistance) this.editDistance = 5.0;
+      this.editDurationMins = null;
+      this.editSteps = null;
+    } else if (sport === 'cycling') {
+      if (!this.editDistance) this.editDistance = 15.0;
+      this.editDurationMins = null;
+      this.editSteps = null;
+    } else if (sport === 'swimming' || sport === 'gym') {
+      if (!this.editDurationMins) this.editDurationMins = 45;
+      this.editDistance = null;
+      this.editSteps = null;
+    } else if (sport === 'steps') {
+      if (!this.editSteps) this.editSteps = 8000;
+      this.editDistance = null;
+      this.editDurationMins = null;
+    }
+  }
+
+  get editEstimatedPoints(): number {
+    const sport = this.editSport;
+    if (sport === 'running') {
+      return Math.floor((Number(this.editDistance) || 0) * 100);
+    } else if (sport === 'walking') {
+      return Math.floor((Number(this.editDistance) || 0) * 50);
+    } else if (sport === 'cycling') {
+      return Math.floor((Number(this.editDistance) || 0) * 25);
+    } else if (sport === 'swimming') {
+      return Math.floor((Number(this.editDurationMins) || 0) * 15);
+    } else if (sport === 'gym') {
+      return Math.floor((Number(this.editDurationMins) || 0) * 5);
+    } else if (sport === 'steps') {
+      return Math.floor((Number(this.editSteps) || 0) / 100);
+    }
+    return 0;
+  }
+
+  saveEditActivity() {
+    const act = this.editingActivity();
+    if (!act) return;
+
+    let metric_type = 'distance';
+    if (this.editSport === 'swimming' || this.editSport === 'gym') {
+      metric_type = 'duration';
+    } else if (this.editSport === 'steps') {
+      metric_type = 'steps';
+    }
+
+    const payload: any = {
+      sport: this.editSport,
+      metric_type: metric_type,
+      distance_km: metric_type === 'distance' ? Number(this.editDistance) : null,
+      duration_seconds: metric_type === 'duration' ? Number(this.editDurationMins) * 60 : null,
+      steps: metric_type === 'steps' ? Number(this.editSteps) : null
+    };
+
+    this.isUpdating.set(true);
+    this.activityService.updateActivity(act.id, payload).subscribe({
+      next: (updated: any) => {
+        this.isUpdating.set(false);
+        this.activities.update(list => list.map(a => a.id === act.id ? { 
+          ...a, 
+          ...updated, 
+          activity_date: a.activity_date 
+        } : a));
+        this.closeEditModal();
+        this.toastMessage.set('Workout updated successfully!');
+        setTimeout(() => this.toastMessage.set(null), 3000);
+      },
+      error: (err: any) => {
+        console.error('Update error:', err);
+        this.isUpdating.set(false);
+        alert(err?.error?.detail || 'Failed to update activity.');
+      }
+    });
+  }
+
+  // Export to CSV
+  exportToCSV() {
+    const data = this.filteredActivities;
+    if (!data.length) {
+      alert('No activities to export.');
+      return;
+    }
+
+    const headers = ['ID', 'Sport', 'Metric Type', 'Distance (km)', 'Duration (mins)', 'Steps', 'Points', 'Activity Date'];
+    const rows = data.map(a => [
+      a.id,
+      `"${a.sport}"`,
+      `"${a.metric_type}"`,
+      a.distance_km ?? '',
+      a.duration_seconds ? Math.round(a.duration_seconds / 60) : '',
+      a.steps ?? '',
+      a.points,
+      `"${a.activity_date || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `fittrack_activities_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.toastMessage.set('✓ CSV export downloaded successfully!');
+    setTimeout(() => this.toastMessage.set(null), 3000);
+  }
+
+  // Export to JSON
+  exportToJSON() {
+    const data = this.filteredActivities;
+    if (!data.length) {
+      alert('No activities to export.');
+      return;
+    }
+
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.download = `fittrack_activities_${dateStr}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    this.toastMessage.set('✓ JSON export downloaded successfully!');
+    setTimeout(() => this.toastMessage.set(null), 3000);
   }
 
   getMetricValue(act: any): string {
@@ -186,4 +344,3 @@ export class Activities implements OnInit {
   }
 
 }
-

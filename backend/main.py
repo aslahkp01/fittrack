@@ -22,28 +22,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "fitness-challenge-secret-key")
 ALGORITHM = "HS256"
-def get_current_user(
-    token: str,
-    db: Session
-):
-    try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
 
-        user_id = payload.get("user_id")
-
-        if user_id is None:
-            return None
-
-    except JWTError:
-        return None
-
-    return db.query(User).filter(
-        User.id == user_id
-    ).first()
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
@@ -103,6 +82,13 @@ class ActivityCreate(BaseModel):
     user_id: int | None = Field(default=None)
     sport: str
     metric_type: str
+    distance_km: float | None = Field(default=None, gt=0)
+    duration_seconds: int | None = Field(default=None, gt=0)
+    steps: int | None = Field(default=None, gt=0)
+
+class ActivityUpdate(BaseModel):
+    sport: str | None = Field(default=None)
+    metric_type: str | None = Field(default=None)
     distance_km: float | None = Field(default=None, gt=0)
     duration_seconds: int | None = Field(default=None, gt=0)
     steps: int | None = Field(default=None, gt=0)
@@ -632,6 +618,107 @@ def delete_activity(
     db.delete(activity)
     db.commit()
     return {"message": "Activity deleted successfully"}
+
+@app.put("/api/activities/{activity_id}")
+def update_activity(
+    activity_id: int,
+    activity_update: ActivityUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    activity = db.query(Activity).filter(
+        Activity.id == activity_id,
+        Activity.user_id == current_user.id
+    ).first()
+
+    if not activity:
+        existing = db.query(Activity).filter(Activity.id == activity_id).first()
+        if existing:
+            raise HTTPException(status_code=403, detail="You do not have permission to edit this activity")
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    valid_combinations = {
+        "running": "distance",
+        "walking": "distance",
+        "cycling": "distance",
+        "swimming": "duration",
+        "gym": "duration",
+        "steps": "steps"
+    }
+
+    target_sport = (activity_update.sport or activity.sport).lower().strip()
+    target_metric_type = (activity_update.metric_type or activity.metric_type).lower().strip()
+
+    if target_sport not in valid_combinations:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid sport '{target_sport}'. Supported sports: {list(valid_combinations.keys())}"
+        )
+
+    # Auto-adjust metric type if sport was changed without explicit metric_type
+    if activity_update.sport and not activity_update.metric_type:
+        target_metric_type = valid_combinations[target_sport]
+
+    if target_metric_type != valid_combinations[target_sport]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Mismatched metric type '{target_metric_type}' for sport '{target_sport}'. Expected '{valid_combinations[target_sport]}'"
+        )
+
+    # Determine metric values
+    target_distance = activity_update.distance_km if target_metric_type == "distance" else None
+    target_duration = activity_update.duration_seconds if target_metric_type == "duration" else None
+    target_steps = activity_update.steps if target_metric_type == "steps" else None
+
+    # Fallback to existing if metric type unchanged and value omitted
+    if target_metric_type == "distance" and target_distance is None:
+        target_distance = activity.distance_km
+    if target_metric_type == "duration" and target_duration is None:
+        target_duration = activity.duration_seconds
+    if target_metric_type == "steps" and target_steps is None:
+        target_steps = activity.steps
+
+    if target_metric_type == "distance" and (target_distance is None or target_distance <= 0):
+        raise HTTPException(status_code=400, detail="Distance (km) must be provided and greater than 0")
+    if target_metric_type == "duration" and (target_duration is None or target_duration <= 0):
+        raise HTTPException(status_code=400, detail="Duration (seconds) must be provided and greater than 0")
+    if target_metric_type == "steps" and (target_steps is None or target_steps <= 0):
+        raise HTTPException(status_code=400, detail="Steps count must be provided and greater than 0")
+
+    class ScoringProxy:
+        def __init__(self, sport, distance_km, duration_seconds, steps):
+            self.sport = sport
+            self.distance_km = distance_km
+            self.duration_seconds = duration_seconds
+            self.steps = steps
+
+    proxy = ScoringProxy(target_sport, target_distance, target_duration, target_steps)
+    points = calculate_points(proxy)
+
+    # Save baseline snapshot before applying changes
+    save_current_leaderboard_snapshot(db)
+
+    activity.sport = target_sport
+    activity.metric_type = target_metric_type
+    activity.distance_km = target_distance
+    activity.duration_seconds = target_duration
+    activity.steps = target_steps
+    activity.points = points
+
+    db.commit()
+    db.refresh(activity)
+
+    return {
+        "activityId": activity.id,
+        "userId": activity.user_id,
+        "message": "Activity updated successfully",
+        "sport": activity.sport,
+        "metric_type": activity.metric_type,
+        "points": activity.points,
+        "distance_km": activity.distance_km,
+        "duration_seconds": activity.duration_seconds,
+        "steps": activity.steps
+    }
 
 @app.get("/api/leaderboard/trends")
 def get_leaderboard_trends(
