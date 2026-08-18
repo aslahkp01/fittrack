@@ -1,6 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { Component } from '@angular/core';
 import { Dashboard } from './dashboard';
+
+@Component({ template: '' })
+class MockComponent {}
 
 describe('Dashboard', () => {
   let component: Dashboard;
@@ -9,6 +15,14 @@ describe('Dashboard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Dashboard],
+      providers: [
+        provideRouter([
+          { path: 'login', component: MockComponent },
+          { path: 'dashboard', component: MockComponent }
+        ]),
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Dashboard);

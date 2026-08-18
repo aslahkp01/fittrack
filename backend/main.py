@@ -10,7 +10,7 @@ from scoring import calculate_points
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 Base.metadata.create_all(bind=engine)
 
@@ -172,7 +172,7 @@ def save_current_leaderboard_snapshot(db: Session):
         .order_by(func.coalesce(func.sum(Activity.points), 0).desc())
         .all()
     )
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     for rank, user in enumerate(users, start=1):
         snapshot = LeaderboardSnapshot(
             user_id=user.id,
@@ -473,7 +473,7 @@ def get_dashboard(
         else:
             date_set.add(d_str)
 
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     streak = 0
     if today in date_set:
         check_date = today
@@ -517,7 +517,7 @@ def get_dashboard(
     tier_progress_pct = min(100, max(0, int(((total_points - tier_min) / (tier_max - tier_min)) * 100)))
 
     # Calculate weekly vs last week comparison
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     seven_days_ago = now - timedelta(days=7)
     fourteen_days_ago = now - timedelta(days=14)
 

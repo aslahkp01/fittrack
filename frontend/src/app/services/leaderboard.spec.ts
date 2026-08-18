@@ -1,13 +1,20 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { LeaderboardService } from './leaderboard';
 
-import { Leaderboard } from './leaderboard';
-
-describe('Leaderboard', () => {
-  let service: Leaderboard;
+describe('LeaderboardService', () => {
+  let service: LeaderboardService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(Leaderboard);
+    TestBed.configureTestingModule({
+      providers: [
+        LeaderboardService,
+        provideHttpClient(),
+        provideHttpClientTesting()
+      ]
+    });
+    service = TestBed.inject(LeaderboardService);
   });
 
   it('should be created', () => {

@@ -63,6 +63,13 @@ npm run start
 ```
 The application will be accessible at `http://localhost:4200`.
 
+### 5. Run Frontend Unit Tests
+```bash
+cd frontend
+npm test -- --watch=false
+```
+
+
 ---
 
 ## 📄 Software Design Document

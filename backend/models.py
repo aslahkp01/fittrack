@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
 from database import Base
-from datetime import datetime
+from datetime import datetime, timezone
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 class User(Base):
     __tablename__ = "users"
@@ -24,7 +27,7 @@ class Activity(Base):
     points = Column(Integer, nullable=False)
     activity_date = Column(
         DateTime,
-        default=datetime.utcnow
+        default=utc_now
     )
 class LeaderboardSnapshot(Base):
     __tablename__ = "leaderboard_snapshots"
@@ -32,4 +35,4 @@ class LeaderboardSnapshot(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False)
     rank = Column(Integer, nullable=False)
-    snapshot_date = Column(DateTime, default=datetime.utcnow)
+    snapshot_date = Column(DateTime, default=utc_now)
